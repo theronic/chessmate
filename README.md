@@ -9,9 +9,9 @@ I wrote this chess engine in Java for my grade 12 (matric) project. I was 17 at 
 ![Chessmate Screenshot](/chessmate-screenshot.png "Chessmate Playing")
 
 ## Limitations
-Chessmate cannot castle or take en passant. If you harbor sado-masochistic tendencies, you can easily modify the `Board` class and heuristic function to add castling.
+Chessmate has no opening book, cannot castle, nor take en passant. If you harbor sado-masochistic tendencies, you can easily modify the `Board` class and heuristic function to add castling.
 
-How does it work?
+## How does it work?
 Chessmate uses an iterative deepening minimax search algorithm with alpha-beta pruning and simple horizon detection during exchanges with an original heuristic function.
 
 That's a fancy way of saying it builds a tree of moves, rates each move with a number (using a heuristic function), then keeps exploring the leaf branches that seem promising. Minimax assumes its opponent will make the best sequence of moves it can think of and will then counter with a move that minimises your opportunities while maximising its own.
