@@ -1,0 +1,17 @@
+#java specific
+*.class
+*.pdf
+*.bat
+
+*.jde
+docs/*
+db/*
+history/*
+old/*
+res/*
+## generic files to ignore
+*~
+*.lock
+*.DS_Store
+*.swp
+*.out
