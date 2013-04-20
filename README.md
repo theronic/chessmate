@@ -1,7 +1,10 @@
 # Chessmate Chess AI
-## Matric Computer Class Project in Java
+Matric Computer Class Project in Java
 
-I wrote this chess engine in Java for my grade 12 (matric) project at High School DF Malan in Bellville, Cape Town. I was 17 at the time, so the code is probably really bad.
+## How to run
+Run `src/build.bat` to compile and run. You will need the Java SDK.
+
+I wrote this chess engine in Java for my grade 12 (matric) project. I was 17 at the time. Is still works! It won a regional prize or something, but the cash must be lost in the mail.
 
 ## How does it work?
 Chessmate uses an iterative deepening minimax search algorithm with alpha-beta pruning and simple horizon detection during exchanges.
