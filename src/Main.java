@@ -20,7 +20,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 /**
  * Our version counter
  */
- 	final public static String VERSION = "1.3";
+   final public static String VERSION = "1.3";
 
 /**
  * The omni-present Chess reference, used nearly everywhere for calculations
@@ -732,25 +732,25 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
 		tracker = new MediaTracker(this);
 
-//		Image strip = getImage( getCodeBase(), "..\\images\\alpha.gif" ); // applet stuff
+//		Image strip = getImage( getCodeBase(), "../images/alpha.gif" ); // applet stuff
 
-		Image strip = Toolkit.getDefaultToolkit().getImage( new String("..\\images\\alpha.gif") );
+		Image strip = Toolkit.getDefaultToolkit().getImage( new String("../images/alpha.gif") );
 		tracker.addImage( strip, 0 );
 		++trackerCount;
 /* // Applet stuff
-		toolbarImages[0] = getImage( getCodeBase(), "..\\images\\icon_new.gif" );
-		toolbarImages[1] = getImage( getCodeBase(), "..\\images\\icon_loadgame.gif" );
-		toolbarImages[2] = getImage( getCodeBase(), "..\\images\\icon_savegame.gif" );
-		toolbarImages[3] = getImage( getCodeBase(), "..\\images\\icon_takeback.gif" );
-		toolbarImages[4] = getImage( getCodeBase(), "..\\images\\icon_setupboard.gif" );
-		toolbarImages[5] = getImage( getCodeBase(), "..\\images\\icon_help.gif" );
+		toolbarImages[0] = getImage( getCodeBase(), "../images/icon_new.gif" );
+		toolbarImages[1] = getImage( getCodeBase(), "../images/icon_loadgame.gif" );
+		toolbarImages[2] = getImage( getCodeBase(), "../images/icon_savegame.gif" );
+		toolbarImages[3] = getImage( getCodeBase(), "../images/icon_takeback.gif" );
+		toolbarImages[4] = getImage( getCodeBase(), "../images/icon_setupboard.gif" );
+		toolbarImages[5] = getImage( getCodeBase(), "../images/icon_help.gif" );
 */
-		toolbarImages[0] = Toolkit.getDefaultToolkit().getImage( new String( "..\\images\\icon_new.gif" ) );
-		toolbarImages[1] = Toolkit.getDefaultToolkit().getImage( new String( "..\\images\\icon_loadgame.gif" ) );
-		toolbarImages[2] = Toolkit.getDefaultToolkit().getImage( new String( "..\\images\\icon_savegame.gif" ) );
-		toolbarImages[3] = Toolkit.getDefaultToolkit().getImage( new String( "..\\images\\icon_takeback.gif" ) );
-		toolbarImages[4] = Toolkit.getDefaultToolkit().getImage( new String( "..\\images\\icon_setupboard.gif" ) );
-		toolbarImages[5] = Toolkit.getDefaultToolkit().getImage( new String( "..\\images\\icon_help.gif" ) );
+		toolbarImages[0] = Toolkit.getDefaultToolkit().getImage( new String( "../images/icon_new.gif" ) );
+		toolbarImages[1] = Toolkit.getDefaultToolkit().getImage( new String( "../images/icon_loadgame.gif" ) );
+		toolbarImages[2] = Toolkit.getDefaultToolkit().getImage( new String( "../images/icon_savegame.gif" ) );
+		toolbarImages[3] = Toolkit.getDefaultToolkit().getImage( new String( "../images/icon_takeback.gif" ) );
+		toolbarImages[4] = Toolkit.getDefaultToolkit().getImage( new String( "../images/icon_setupboard.gif" ) );
+		toolbarImages[5] = Toolkit.getDefaultToolkit().getImage( new String( "../images/icon_help.gif" ) );
 
 		for ( int i = 0; i < 6; i++ )
 			tracker.addImage( toolbarImages[i], trackerCount++ );
@@ -1834,7 +1834,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
 
 		System.out.println( System.getProperty("user.dir") );
-		htmlModule = new HTMLModule( panel, "../html/index.htm");//"..\\docs\\html\\index.html" );
+		htmlModule = new HTMLModule( panel, "../html/index.htm");//"../docs/html/index.html" );
 
 		frame.setSize(700,500);
 
