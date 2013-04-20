@@ -96,7 +96,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 /**
  * When bRedraw is true, the main thread will redraw the window in less than 25ms.
  */
-  private boolean bRedraw = true; // the board will be redrawn when this is true
+  private boolean bRedraw = true; / the board will be redrawn when this is true
 
   int moveTime = 0;
 
@@ -192,7 +192,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
  */
   MenuBar menuBar;
 
-  // Menu Items
+  / Menu Items
   Menu menu_Game;
 
   MenuItem menu_Game_New;
@@ -248,7 +248,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
  * bPlaying is true when the game is in progress - not for example when the board
  * is being set up.
  */
-  public boolean bPlaying = true; // are we playing
+  public boolean bPlaying = true; / are we playing
 /**
  * bSetPosition is true when the player is setting up the board.  Kind of self-explanatory.
  */
@@ -265,23 +265,23 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
  * for ID assignment by media tracker.
  * @see tracker
  */
-  static int trackerCount = 0; // incremented for each image to be loaded
+  static int trackerCount = 0; / incremented for each image to be loaded
 
 /**
  * An image holding the strip of black and white pieces.
  */
-  static Image strip; // the image strip
+  static Image strip; / the image strip
 /**
  * An array of images holding the piece images extracted from the image strip.
  * Used by drawing routines.
  * @see strip
  */
-  static Image images[]; // the constituent images
+  static Image images[]; / the constituent images
 /**
  * Holds the number of piece images in the image strip - should always be 12.
  */
   int num_images = 0;
-  int piece_width = 50; // width of each image in strip
+  int piece_width = 50; / width of each image in strip
   int height;
 
   JLabel field_Nodes = new JLabel("0");
@@ -331,12 +331,12 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     ImageProducer source = strip.getSource();
     for ( int i = 0; i < num_images; i++ )
     {
-      // define filter to pull image at (i*width,0) with
-      // dimensions (width,height)
+      / define filter to pull image at (i*width,0) with
+      / dimensions (width,height)
       ImageFilter extractFilter = new CropImageFilter( i*width, 0, width, height);
-      // define producer from source and filter
+      / define producer from source and filter
       ImageProducer producer = new FilteredImageSource(source,extractFilter);
-      // extract the subimage!
+      / extract the subimage!
       images[i] = createImage(producer);
     }
   }
@@ -352,7 +352,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     if ( mx < 0 || my < 0 || sx >= 8 || sy >= 8 )
       return -1;
 
-    //return ( (sy * 10) + sx );
+    /return ( (sy * 10) + sx );
     return ( bFlipBoard ?  (7-sy)*10 + (7-sx) : sy*10 + sx );
   }
 
@@ -398,21 +398,21 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
   public void playerMoved( boolean player, ChessMove move )
   {
-    // test to enable en-passant
+    / test to enable en-passant
     if ( chess.pos.board[move.from] == (player?ChessPosition.PAWN:-ChessPosition.PAWN) )
     {
       int offset = move.to - move.from;
       if ( offset < 0 )
         offset = -offset;
-      if ( offset == 20 ) // i.e. moved two square
+      if ( offset == 20 ) / i.e. moved two square
       {
         chess.pos.enPassantSquare = move.to;
-        //System.out.println("En-passant option detected.");
+        /System.out.println("En-passant option detected.");
       }
     } else
       chess.pos.enPassantSquare = 0;
 
-    // adding previous position to the board history
+    / adding previous position to the board history
     ChessPosition p = new ChessPosition( chess.pos );
     chess.boardHistory.push( p );
 
@@ -440,7 +440,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     lastMove = move;
 
-    // add the move to our move list
+    / add the move to our move list
     moveList.add( new String( move.toString() ) );
     moveTable_scrollPane.getViewport().updateUI();
 
@@ -463,7 +463,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     chess.bWhoseTurn = !player;
 
-    // our little test for letting Chessmate play against himself :)
+    / our little test for letting Chessmate play against himself :)
 /*    chess.PROGRAM = !chess.PROGRAM;
     chess.HUMAN = !chess.HUMAN;
     if ( chess.maxDepth == 6 )
@@ -495,12 +495,12 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
    */
   public void mouseReleased(MouseEvent e)
   {
-    while ( true ) // a dummy for easy error-checking
+    while ( true ) / a dummy for easy error-checking
     {
     if ( hoverPiece > 0 && !chess.bThinking)
     {
-      int x = e.getX() - HORZ_OFFSET; // - BOARD_HORZ_OFFSET;
-      int y = e.getY() - VERT_OFFSET; // - BOARD_VERT_OFFSET;
+      int x = e.getX() - HORZ_OFFSET; / - BOARD_HORZ_OFFSET;
+      int y = e.getY() - VERT_OFFSET; / - BOARD_VERT_OFFSET;
 
       if ( x <= BOARD_WIDTH && y <= BOARD_HEIGHT )
       {
@@ -508,7 +508,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
         if ( square + 1 != hoverPiece )
         {
-          // Now we must test whether this move is valid
+          / Now we must test whether this move is valid
 
           ChessMove move = new ChessMove();
           move.from = hoverPiece - 1;
@@ -521,11 +521,11 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
           playerMoved( Chess.HUMAN, move );
           chess.pos.makeMove(move);
 
-          // This is the queue for the PC to start THINKING...
+          / This is the queue for the PC to start THINKING...
           if ( bPlaying )
           {
             aiCaller.go();
-            //chess.pos = chess.playGame( chess.pos );
+            /chess.pos = chess.playGame( chess.pos );
           }
         }
       }
@@ -543,13 +543,13 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
    */
   public void mousePressed(MouseEvent e)
   {
-    //int x = e.getX() - HORZ_OFFSET - BOARD_HORZ_OFFSET;
-    //int y = e.getY() - VERT_OFFSET - BOARD_VERT_OFFSET;
+    /int x = e.getX() - HORZ_OFFSET - BOARD_HORZ_OFFSET;
+    /int y = e.getY() - VERT_OFFSET - BOARD_VERT_OFFSET;
 
-    int x = e.getX() - HORZ_OFFSET; // ..BOARD_HORZ_OFFSET;
-    int y = e.getY() - VERT_OFFSET; // BOARD_VERT_OFFSET;
+    int x = e.getX() - HORZ_OFFSET; / ..BOARD_HORZ_OFFSET;
+    int y = e.getY() - VERT_OFFSET; / BOARD_VERT_OFFSET;
 
-    //System.out.printf("%d %d ", x, y);
+    /System.out.printf("%d %d ", x, y);
     if ( x <= BOARD_WIDTH && y <= BOARD_HEIGHT )
     {
       int square = calcSquare( x, y );  
@@ -557,13 +557,13 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
       if ( square >= 0 && square <= 80 )
         if ( chess.pos.board[square] != ChessPosition.BLANK )
         {
-          //System.out.println("Pressed on square " + square);
+          /System.out.println("Pressed on square " + square);
           if ( bSetPosition || (chess.HUMAN ? (chess.pos.board[square] > 0) : (chess.pos.board[square] < 0)) )
             hoverPiece = square + 1;
           else
             hoverPiece = 0;
-        }// else
-        //  System.out.println("Square " + square + " is blank.");
+        }/ else
+        /  System.out.println("Square " + square + " is blank.");
     } else
       hoverPiece = 0;
   }
@@ -613,10 +613,10 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
       }
       repaint();
     } else
-    // Menu stuff
+    / Menu stuff
     if ( source == menu_Game_SetPosition || source == butt_SetupBoard )
     {
-      if ( bSetPosition ) // saving
+      if ( bSetPosition ) / saving
         menu_Game_SetPosition.setLabel("Set-Up Position");
       else
         menu_Game_SetPosition.setLabel("Save Position");
@@ -641,14 +641,14 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
       Exit();
     } else
 
-    // Options Menu goes here
+    / Options Menu goes here
     if ( source == menu_Opt_Database )
     {
       System.out.println("DB");
       db = new Database(this);
     } else
 
-    // View Menu here
+    / View Menu here
     if ( source == menu_View_Flip )
     {
       bFlipBoard = !bFlipBoard;
@@ -657,10 +657,10 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     {
       chess.bIterativeDeepening = chk_IterativeDeep.isSelected();
     }
-    // Visual Thinking check box
+    / Visual Thinking check box
     if ( source == chk_VisualThinking )
     {
-      bVisualThinking = ((JCheckBox)source).isSelected();//!bVisualThinking;
+      bVisualThinking = ((JCheckBox)source).isSelected();/!bVisualThinking;
     } else
     if ( source == chk_SlowRedraws )
     {
@@ -732,33 +732,33 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     tracker = new MediaTracker(this);
 
-//    Image strip = getImage( getCodeBase(), "../images/alpha.gif" ); // applet stuff
+/    Image strip = getImage( getCodeBase(), "..\\images\\alpha.gif" ); / applet stuff
 
-    Image strip = Toolkit.getDefaultToolkit().getImage( new String("../images/alpha.gif") );
+    Image strip = Toolkit.getDefaultToolkit().getImage( new String("..\\images\\alpha.gif") );
     tracker.addImage( strip, 0 );
     ++trackerCount;
-/* // Applet stuff
-    toolbarImages[0] = getImage( getCodeBase(), "../images/icon_new.gif" );
-    toolbarImages[1] = getImage( getCodeBase(), "../images/icon_loadgame.gif" );
-    toolbarImages[2] = getImage( getCodeBase(), "../images/icon_savegame.gif" );
-    toolbarImages[3] = getImage( getCodeBase(), "../images/icon_takeback.gif" );
-    toolbarImages[4] = getImage( getCodeBase(), "../images/icon_setupboard.gif" );
-    toolbarImages[5] = getImage( getCodeBase(), "../images/icon_help.gif" );
+/* / Applet stuff
+    toolbarImages[0] = getImage( getCodeBase(), "..\\images\\icon_new.gif" );
+    toolbarImages[1] = getImage( getCodeBase(), "..\\images\\icon_loadgame.gif" );
+    toolbarImages[2] = getImage( getCodeBase(), "..\\images\\icon_savegame.gif" );
+    toolbarImages[3] = getImage( getCodeBase(), "..\\images\\icon_takeback.gif" );
+    toolbarImages[4] = getImage( getCodeBase(), "..\\images\\icon_setupboard.gif" );
+    toolbarImages[5] = getImage( getCodeBase(), "..\\images\\icon_help.gif" );
 */
-    toolbarImages[0] = Toolkit.getDefaultToolkit().getImage( new String( "../images/icon_new.gif" ) );
-    toolbarImages[1] = Toolkit.getDefaultToolkit().getImage( new String( "../images/icon_loadgame.gif" ) );
-    toolbarImages[2] = Toolkit.getDefaultToolkit().getImage( new String( "../images/icon_savegame.gif" ) );
-    toolbarImages[3] = Toolkit.getDefaultToolkit().getImage( new String( "../images/icon_takeback.gif" ) );
-    toolbarImages[4] = Toolkit.getDefaultToolkit().getImage( new String( "../images/icon_setupboard.gif" ) );
-    toolbarImages[5] = Toolkit.getDefaultToolkit().getImage( new String( "../images/icon_help.gif" ) );
+    toolbarImages[0] = Toolkit.getDefaultToolkit().getImage( new String( "..\\images\\icon_new.gif" ) );
+    toolbarImages[1] = Toolkit.getDefaultToolkit().getImage( new String( "..\\images\\icon_loadgame.gif" ) );
+    toolbarImages[2] = Toolkit.getDefaultToolkit().getImage( new String( "..\\images\\icon_savegame.gif" ) );
+    toolbarImages[3] = Toolkit.getDefaultToolkit().getImage( new String( "..\\images\\icon_takeback.gif" ) );
+    toolbarImages[4] = Toolkit.getDefaultToolkit().getImage( new String( "..\\images\\icon_setupboard.gif" ) );
+    toolbarImages[5] = Toolkit.getDefaultToolkit().getImage( new String( "..\\images\\icon_help.gif" ) );
 
     for ( int i = 0; i < 6; i++ )
       tracker.addImage( toolbarImages[i], trackerCount++ );
 
-    //if ( strip == null )
-    //  System.out.println("Houston, we have a problem.");
+    /if ( strip == null )
+    /  System.out.println("Houston, we have a problem.");
 
-    // wait for images to load
+    / wait for images to load
 
     try {
       System.out.println("Loading images...");
@@ -769,22 +769,22 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
       return;
       }
 
-    // Load Piece Images for Black & White from an image strip
+    / Load Piece Images for Black & White from an image strip
 
-    // define number of images in strip
+    / define number of images in strip
     num_images = strip.getWidth(this)/piece_width;
     System.out.println( num_images + " in strip" );
 
-    // define height of each image
+    / define height of each image
     height = strip.getHeight(this);
 
-    // define array of constituent images
+    / define array of constituent images
     images = new Image[num_images];
 
-    // extract constituent images
+    / extract constituent images
     extractImages(strip,images,num_images,piece_width,height);
 
-    // Track the loading of images with MediaTracker
+    / Track the loading of images with MediaTracker
     for ( int i = 0; i < num_images; i++ )
     {
       tracker.addImage(images[i],trackerCount++);
@@ -806,7 +806,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
  */
   static class OldGame
   {
-    int id; // all important!
+    int id; / all important!
     String desc;
     String szDate;
     ChessPosition pos;
@@ -984,8 +984,8 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     try {
       loadGames.clear();
       ResultSet rs = db.dataBase.statement.executeQuery( "SELECT * FROM Games" );
-      //if ( rs.first() )
-    //  {
+      /if ( rs.first() )
+    /  {
       while ( rs.next() )
       {
         OldGame og = new OldGame();
@@ -994,8 +994,8 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
         og.szDate = rs.getString("Date");
         og.pos = chess.decodePosition( rs.getString("Position") );
         loadGames.add( og );
-      }// while ( rs.next() );
-    //  }
+      }/ while ( rs.next() );
+    /  }
     } catch ( SQLException e )
     {
       System.out.println("populateLoadGames() :: SQLException: " + e.toString());
@@ -1031,7 +1031,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
       return;
     }
 
-    // Create the labels and text fields.
+    / Create the labels and text fields.
     JLabel gameDescLabel = new JLabel("Game Description: ", JLabel.RIGHT);
     JTextField gameDescField = new JTextField( getTitle() );
 
@@ -1060,13 +1060,13 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
           System.out.println("Saving game...");
 
-          // check if we are over-riding an existing game
+          / check if we are over-riding an existing game
         PreparedStatement selPS = db.dataBase.connection.prepareStatement("SELECT * FROM Games WHERE Description=?");
         selPS.setString(1, gameDescField.getText());
         ResultSet rs = selPS.executeQuery();
 
         PreparedStatement pstmt;
-        //PreparedStatement moveStmt;
+        /PreparedStatement moveStmt;
 
         if ( rs.next() )
         {
@@ -1074,10 +1074,10 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
           pstmt = db.dataBase.connection.prepareStatement("UPDATE Games SET Description=?,Position=? WHERE ID=?");
           pstmt.setInt( 3, rs.getInt("ID") );
 
-          //moveStmt = db.dataBase.connection.prepareStatement("DELETE FROM Moves WHERE ID="+rs.getInt("ID"));
-//          moveStmt.setInt( 1, rs.getInt("ID") );
+          /moveStmt = db.dataBase.connection.prepareStatement("DELETE FROM Moves WHERE ID="+rs.getInt("ID"));
+/          moveStmt.setInt( 1, rs.getInt("ID") );
 
-          //moveStmt.execute();
+          /moveStmt.execute();
 
         } else
         {
@@ -1107,7 +1107,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
         while ( e.hasMoreElements() )
         {
           moveStmt = db.dataBase.connection.prepareStatement("INSERT INTO Moves (Game,MoveNum,Move) VALUES(?,?,?)");
-          //moveStmt.setInt(
+          /moveStmt.setInt(
         }*/
 
       } catch ( SQLException ex )
@@ -1135,10 +1135,10 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     if ( bSetPosition )
     {
-    //  menu_Game_SetPosition.setLabel("Done Setting up Position");
+    /  menu_Game_SetPosition.setLabel("Done Setting up Position");
     } else
     {
-    //  menu_Game_SetPosition.setText(Set-up Position");
+    /  menu_Game_SetPosition.setText(Set-up Position");
     }
   }
 
@@ -1190,10 +1190,10 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     this.setResizable( false );
 
-    LoadImages(); // Initialises Everything
+    LoadImages(); / Initialises Everything
 
     Container con = getContentPane();
-    con.setLayout( null ); // We don't want a layout as we'd rather arrange components ourselves
+    con.setLayout( null ); / We don't want a layout as we'd rather arrange components ourselves
 
     toolPanel = new Panel( new GridLayout(1,6) );
     toolPanel.setBounds( 0, 0, BOARD_WIDTH + HORZ_OFFSET + 10, 40 );
@@ -1224,13 +1224,13 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     con.add(toolPanel);
 
-    // Init Menu Bar
+    / Init Menu Bar
     menuBar = new MenuBar();
 
     menu_Game = new Menu("Game");
     menuBar.add( menu_Game );
 
-    // Init Save Game Menu
+    / Init Save Game Menu
     menu_Game_New = new MenuItem("New Game");
     menu_Game.add( menu_Game_New );
     menu_Game_New.addActionListener(this);
@@ -1239,32 +1239,32 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     menu_Game.add( menu_Game_SetPosition );
     menu_Game_SetPosition.addActionListener(this);
 
-    // Insert a separator between New Game and Takeback
+    / Insert a separator between New Game and Takeback
     menu_Game.addSeparator();
 
     menu_Game_Takeback = new MenuItem("Takeback Move");
     menu_Game.add( menu_Game_Takeback );
     menu_Game_Takeback.addActionListener(this);
 
-    // Init Load Game Menu
+    / Init Load Game Menu
     menu_Game_Load = new MenuItem("Load Game");
     menu_Game.add( menu_Game_Load );
     menu_Game_Load.addActionListener(this);
 
-    // Init Save Game Menu
+    / Init Save Game Menu
     menu_Game_Save = new MenuItem("Save Game");
     menu_Game.add( menu_Game_Save );
     menu_Game_Save.addActionListener(this);
 
-    // Insert a separator between items and Exit
+    / Insert a separator between items and Exit
     menu_Game.addSeparator();
 
-    // Init Load Game Menu
+    / Init Load Game Menu
     menu_Game_Exit = new MenuItem("Exit");
     menu_Game.add( menu_Game_Exit );
     menu_Game_Exit.addActionListener(this);
 
-    // Options
+    / Options
     menu_Options = new Menu("Options");
     menuBar.add( menu_Options );
 
@@ -1284,7 +1284,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     menu_Network.add( menu_Network_Connect );
     menu_Network_Connect.addActionListener(this);
 
-    // View
+    / View
     menu_View = new Menu("View");
     menuBar.add( menu_View );
 
@@ -1292,27 +1292,27 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     menu_View.add( menu_View_Flip );
     menu_View_Flip.addActionListener(this);
 
-    // Initialize Tabbed Pane, which contains game info
+    / Initialize Tabbed Pane, which contains game info
     tabbedPane = new JTabbedPane();
     tabbedPane.setBounds(420,0,TAB_WIDTH,TAB_HEIGHT);
     tabbedPane.setDoubleBuffered(true);
 
-    // Set up some buttons and other options for the user to press
+    / Set up some buttons and other options for the user to press
 
     GridBagLayout gridBag = new GridBagLayout();
-    GridBagConstraints gc = new GridBagConstraints();//0,2,0,0);
+    GridBagConstraints gc = new GridBagConstraints();/0,2,0,0);
 
-    Panel gamePanel = new Panel( gridBag );//new GridLayout(0,1));
+    Panel gamePanel = new Panel( gridBag );/new GridLayout(0,1));
     gamePanel.setBackground( new Color(204,204,204) );
     gamePanel.setBounds(0,0,TAB_WIDTH,400);
 
-  //  GridBagLayout gridLayout = new GridBagLayout();
-//    GridBagConstraints gc = new GridBagConstraints();//0,2,0,0);
-  //  gridLayout.setVgap(0);
-//    infoPanel = new Panel( new GridLayout(0,2,0,0) );
-//    infoPanel.setBackground( Color.lightGray );
+  /  GridBagLayout gridLayout = new GridBagLayout();
+/    GridBagConstraints gc = new GridBagConstraints();/0,2,0,0);
+  /  gridLayout.setVgap(0);
+/    infoPanel = new Panel( new GridLayout(0,2,0,0) );
+/    infoPanel.setBackground( Color.lightGray );
 
-    //infoPanel.setBounds(50,0,200,400);
+    /infoPanel.setBounds(50,0,200,400);
 
     JLabel label_Nodes = new JLabel("Nodes");
     JLabel label_NodesSecond = new JLabel("Nodes per second");
@@ -1323,7 +1323,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     gc.weighty = 1;
 
-    // Add the node count label
+    / Add the node count label
     gc.anchor = GridBagConstraints.WEST;
     gc.fill = GridBagConstraints.VERTICAL;
     gc.weightx = 1.0;
@@ -1332,7 +1332,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     gamePanel.add(label_Nodes);
 
-    // Add the node count field
+    / Add the node count field
     gc.anchor = GridBagConstraints.EAST;
     gc.weightx = 1.0;
     gc.gridwidth = GridBagConstraints.REMAINDER;
@@ -1340,7 +1340,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     gamePanel.add(field_Nodes);
 
-    // Add the nodes per second label
+    / Add the nodes per second label
     gc.anchor = GridBagConstraints.WEST;
     gc.fill = GridBagConstraints.VERTICAL;
     gc.gridwidth = 1;
@@ -1349,14 +1349,14 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     gamePanel.add(label_NodesSecond);
 
-    // Add the nodes per second field
+    / Add the nodes per second field
     gc.anchor = GridBagConstraints.EAST;
     gc.weightx = 1.0;
     gc.gridwidth = GridBagConstraints.REMAINDER;
     gridBag.setConstraints(field_NodesSecond, gc);
     gamePanel.add(field_NodesSecond);
 
-    // Add the depth label
+    / Add the depth label
     gc.anchor = GridBagConstraints.WEST;
     gc.fill = GridBagConstraints.VERTICAL;
     gc.gridwidth = 1;
@@ -1365,14 +1365,14 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     gamePanel.add(label_Depth);
 
-    // Add the depth field
+    / Add the depth field
     gc.anchor = GridBagConstraints.EAST;
     gc.weightx = 1.0;
     gc.gridwidth = GridBagConstraints.REMAINDER;
     gridBag.setConstraints(field_Depth, gc);
     gamePanel.add(field_Depth);
 
-    // Add the score label
+    / Add the score label
     gc.anchor = GridBagConstraints.WEST;
     gc.fill = GridBagConstraints.VERTICAL;
     gc.gridwidth = 1;
@@ -1381,14 +1381,14 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     gamePanel.add(label_Score);
 
-    // Add the score field
+    / Add the score field
     gc.anchor = GridBagConstraints.EAST;
     gc.weightx = 1.0;
     gc.gridwidth = GridBagConstraints.REMAINDER;
     gridBag.setConstraints(field_Score, gc);
     gamePanel.add(field_Score);
 
-    // Add the thinking lines label
+    / Add the thinking lines label
     gc.anchor = GridBagConstraints.WEST;
     gc.fill = GridBagConstraints.HORIZONTAL;
     gc.gridwidth = 3;
@@ -1396,7 +1396,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     gridBag.setConstraints(label_Thinking, gc);
     gamePanel.add(label_Thinking);
 
-    // Add the thinking lines field
+    / Add the thinking lines field
     gc.anchor = GridBagConstraints.EAST;
     gc.weightx = 0.25;
     gc.fill = GridBagConstraints.NONE;
@@ -1404,7 +1404,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     gridBag.setConstraints(field_Thinking, gc);
     gamePanel.add(field_Thinking);
 
-    // Add the move time label
+    / Add the move time label
     gc.anchor = GridBagConstraints.WEST;
     gc.fill = GridBagConstraints.HORIZONTAL;
     gc.gridwidth = 3;
@@ -1412,7 +1412,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     gridBag.setConstraints(label_MoveTime, gc);
     gamePanel.add(label_MoveTime);
 
-    // Add the move time field
+    / Add the move time field
     gc.anchor = GridBagConstraints.EAST;
     gc.weightx = 0.25;
     gc.fill = GridBagConstraints.NONE;
@@ -1420,7 +1420,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     gridBag.setConstraints(field_MoveTime, gc);
     gamePanel.add(field_MoveTime);
 
-    // Add the Visual Thinking checkbox
+    / Add the Visual Thinking checkbox
     gc.anchor = GridBagConstraints.WEST;
     gc.weightx = 1;
     gc.fill = GridBagConstraints.BOTH;
@@ -1429,7 +1429,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     gamePanel.add(chk_VisualThinking);
     chk_VisualThinking.addActionListener(this);
 
-    // Add the Slow Redraws checkbox
+    / Add the Slow Redraws checkbox
     gc.anchor = GridBagConstraints.WEST;
     gc.weightx = 1;
     gc.fill = GridBagConstraints.BOTH;
@@ -1438,7 +1438,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     gamePanel.add(chk_SlowRedraws);
     chk_SlowRedraws.addActionListener(this);
 
-    // Add the Iterative Deepening checkbox
+    / Add the Iterative Deepening checkbox
     gc.anchor = GridBagConstraints.WEST;
     gc.weightx = 1;
     gc.fill = GridBagConstraints.BOTH;
@@ -1447,7 +1447,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     gamePanel.add(chk_IterativeDeep);
     chk_IterativeDeep.addActionListener(this);
 
-    // Add the Play as White Radio button
+    / Add the Play as White Radio button
     gc.anchor = GridBagConstraints.WEST;
     gc.weightx = 1;
     gc.fill = GridBagConstraints.BOTH;
@@ -1456,9 +1456,9 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     gamePanel.add(radio_White);
     radioGroup.add( radio_White );
     radio_White.addActionListener( this );
-//    radioPanel.add( radio_White );
+/    radioPanel.add( radio_White );
 
-    // Add the Play as Black Radio button
+    / Add the Play as Black Radio button
     gc.anchor = GridBagConstraints.WEST;
     gc.weightx = 1;
     gc.fill = GridBagConstraints.BOTH;
@@ -1468,7 +1468,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     radioGroup.add( radio_Black );
     radio_Black.addActionListener( this );
 
-    // Add difficulty slider LABEL
+    / Add difficulty slider LABEL
     JLabel sliderLabel = new JLabel("AI Search Depth");
 
     gc.anchor = GridBagConstraints.CENTER;
@@ -1479,7 +1479,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     gamePanel.add( sliderLabel );
 
-    // Add the difficulty slider
+    / Add the difficulty slider
     gc.anchor = GridBagConstraints.CENTER;
     gc.weightx = 1;
     gc.fill = GridBagConstraints.BOTH;
@@ -1500,8 +1500,8 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     tabbedPane.add( new String("Game"), gamePanel );
 
-    // Set-up and add a list of moves to hold players' moves to tabbed pane
-    // moveList = new java.awt.List();
+    / Set-up and add a list of moves to hold players' moves to tabbed pane
+    / moveList = new java.awt.List();
     moveTable.getTableHeader().setReorderingAllowed(false);
 
     moveTable.getColumnModel().getColumn(0).setHeaderValue( "#" );
@@ -1516,7 +1516,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     tabbedPane.add( new String("Move List"), moveTable_scrollPane );
 
-    // Set-up and add a graph of who's winning
+    / Set-up and add a graph of who's winning
     graphScroll.setViewportView(graph);
 
     graphScroll.createHorizontalScrollBar();
@@ -1526,7 +1526,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     tabbedPane.setSelectedIndex(2);
 
-    // Add our tabbed pane to the content layout
+    / Add our tabbed pane to the content layout
     con.add(tabbedPane);
 
     tabbedPane.updateUI();
@@ -1539,19 +1539,19 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
     this.pack();
 
-    // Resize the window to a very precise size that will fit on most displays
+    / Resize the window to a very precise size that will fit on most displays
     this.setSize( WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    // Determine the user name to be displayed in the title bar
+    / Determine the user name to be displayed in the title bar
     this.setTitle( System.getProperty("user.name") + " vs. Computer");
     this.setVisible(true);
 
     repaint();
     tabbedPane.repaint();
 
-//    alert("Chessmate Welcome","Welcome to Chessmate " + VERSION + "!");
+/    alert("Chessmate Welcome","Welcome to Chessmate " + VERSION + "!");
 
-    // Initiates the data source connection
+    / Initiates the data source connection
     db = new Database(this);
 
     Thread mainThread;
@@ -1582,7 +1582,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
         if ( chess.bThinking )
         {
-          ++moveTime; // since this function is called every second, just increment the move timer
+          ++moveTime; / since this function is called every second, just increment the move timer
 
           field_NodesSecond.setText("" + (chess.nodeCount - nodesSecond));
           nodesSecond = chess.nodeCount;
@@ -1619,9 +1619,9 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
   public void update(Graphics g)
   {
       Graphics gr;
-    // Will hold the graphics context from the offScreen.
-    // We need to make sure we keep our offscreen buffer the same size
-    // as the graphics context we're working with.
+    / Will hold the graphics context from the offScreen.
+    / We need to make sure we keep our offscreen buffer the same size
+    / as the graphics context we're working with.
     if ( offScreen == null ||
        offScreen.getWidth(this) != this.getWidth() ||
        offScreen.getHeight(this) != this.getHeight() )
@@ -1630,15 +1630,15 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
       offScreen = this.createImage( BOARD_WIDTH + 2 * HORZ_OFFSET + 10, BOARD_HEIGHT + 2 * VERT_OFFSET + 30);
     }
 
-      // We need to use our buffer Image as a Graphics object:
+      / We need to use our buffer Image as a Graphics object:
       gr = offScreen.getGraphics();
 
-      paint(gr); // Passes our off-screen buffer to our paint method, which,
-                 // unsuspecting, paints on it just as it would on the Graphics
-                 // passed by the browser or applet viewer.
+      paint(gr); / Passes our off-screen buffer to our paint method, which,
+                 / unsuspecting, paints on it just as it would on the Graphics
+                 / passed by the browser or applet viewer.
       g.drawImage(offScreen, HORZ_OFFSET, VERT_OFFSET, this);
-                 // And now we transfer the info in the buffer onto the
-                 // graphics context we got from the browser in one smooth motion.
+                 / And now we transfer the info in the buffer onto the
+                 / graphics context we got from the browser in one smooth motion.
   }
 
 /**
@@ -1669,17 +1669,17 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
   static ChessPosition paintPos = chess.pos;
 
-  static boolean bBlueScreen = false; // is the visual thinking working
+  static boolean bBlueScreen = false; / is the visual thinking working
 
   public static void drawPosition(Graphics g, int xOffset, int yOffset )
   {
-    // Draw the board and pieces
+    / Draw the board and pieces
     boolean bIsBlack = false;
 
     int xPos = 0;
     int yPos = 0;
 
-    int imgHover = 0; // image to draw for hovering piece
+    int imgHover = 0; / image to draw for hovering piece
 
     Color darkColor = colDarkSquare;
     Color lightColor = colLightSquare;
@@ -1714,7 +1714,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     {
       for ( int x = 0; x < 8; x++ )
       {
-        // Draw the level tile
+        / Draw the level tile
 
         xPos = TILE_WIDTH * x + xOffset;
         yPos = TILE_HEIGHT * y + yOffset;
@@ -1724,14 +1724,14 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
         bIsBlack = !bIsBlack;
 
-        // Draw Pieces
+        / Draw Pieces
 
-        // Determine piece value stored at board square, depending on whether the board is flipped
+        / Determine piece value stored at board square, depending on whether the board is flipped
         int square = bFlipBoard ? (7-y)*10 + (7-x) : y*10 + x;
-        int tileVal = paintPos.board[ square ]; //get(x,y);
+        int tileVal = paintPos.board[ square ]; /get(x,y);
 
-        //did the last move take place on this square?
-        if ( bBlueScreen ) // don't draw a last move if visual thinking enabled.
+        /did the last move take place on this square?
+        if ( bBlueScreen ) / don't draw a last move if visual thinking enabled.
         {
           if ( chess.principalVariation[1].from != 0 && chess.principalVariation[1].to != 0 )
           {
@@ -1777,7 +1777,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
         }
 
 
-        // If the square is not blank, determine correct piece image and draw it.
+        / If the square is not blank, determine correct piece image and draw it.
         if ( tileVal != ChessPosition.BLANK )
         {
           int imgVal = tileVal;
@@ -1787,10 +1787,10 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
           --imgVal;
 
-          // If this piece is the piece currently picked up, don't draw it (it is drawn later)
-          if ( square + 1 == hoverPiece ) // remember the + 1 for indexing
+          / If this piece is the piece currently picked up, don't draw it (it is drawn later)
+          if ( square + 1 == hoverPiece ) / remember the + 1 for indexing
           {
-            // Store the hovering piece's image for later drawing
+            / Store the hovering piece's image for later drawing
             imgHover = imgVal;
           } else
           {
@@ -1799,19 +1799,19 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
         }
       }
 
-      bIsBlack = !bIsBlack; // Swap tile colours for correct colouring
+      bIsBlack = !bIsBlack; / Swap tile colours for correct colouring
     }
 
-    // Draw hovering piece (player is holding it with the mouse
+    / Draw hovering piece (player is holding it with the mouse
     if ( hoverPiece > 0 )
     {
       g.drawImage( images[imgHover],
-             mouse_x - TILE_WIDTH / 2, // x-position /  - HORZ_OFFSET
-             mouse_y - TILE_HEIGHT / 2, // y-position - VERT_OFFSET
+             mouse_x - TILE_WIDTH / 2, / x-position /  - HORZ_OFFSET
+             mouse_y - TILE_HEIGHT / 2, / y-position - VERT_OFFSET
              thisMain );
     }
 
-    // Now draw a stroke to the right of the board to indicate whose turn it is
+    / Now draw a stroke to the right of the board to indicate whose turn it is
     g.setColor( chess.bWhoseTurn ? Color.white : Color.black );
     g.fillRect(BOARD_WIDTH, yOffset, 10, BOARD_HEIGHT);
 
@@ -1829,17 +1829,17 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
     con.setLayout( new BorderLayout() );
 
     JPanel panel = new JPanel( new BorderLayout() );
-//    JEditorPane jep = new JEditorPane("text/html","http://localhost/FreshCode/index.html");
-//  con.add(jep);
+/    JEditorPane jep = new JEditorPane("text/html","http:/localhost/FreshCode/index.html");
+/  con.add(jep);
 
 
     System.out.println( System.getProperty("user.dir") );
-    htmlModule = new HTMLModule( panel, "../html/index.htm");//"../docs/html/index.html" );
+    htmlModule = new HTMLModule( panel, "../html/index.htm");/"..\\docs\\html\\index.html" );
 
     frame.setSize(700,500);
 
-    con.add( panel );//htmlModule.html );
-    //tabbedPane.add("brood",panel);
+    con.add( panel );/htmlModule.html );
+    /tabbedPane.add("brood",panel);
 
     frame.show();
 
@@ -1855,7 +1855,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
   public void run()
   {
-    //Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+    /Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 
 
       while (!bQuit)
@@ -1864,7 +1864,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
         {
           ++paintCount;
 
-          if ( paintCount >= 4 ) // every 100 ms
+          if ( paintCount >= 4 ) / every 100 ms
           {
             paintCount = 0;
             repaint();
