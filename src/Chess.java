@@ -38,7 +38,7 @@ public class Chess
  * difficulty slider in the Main class.
  * @see difficultySlider
  */
-	public static int maxDepth = 4; // The Default AI Difficulty level
+	public static int maxDepth = 5; // The Default AI Difficulty level
 
 /**
  * True while the AICaller thread is working.  If it is falsed, the thread will stop ASAP.
