@@ -1,10 +1,10 @@
 # Chessmate Chess AI
-Matric Computer Class Project in Java
+High-school Computer Class Project in Java
 
 ## How to run
 Run `src/build.bat` to compile and run. You will need the Java SDK. You can beat her easily on a depth of 4, but if you give it ~20-30s at depth setting of 5, she plays a decent game.
 
-I wrote this Java chess engine eight years ago in 2005 for my grade 12 high school project. I was 17 at the time, so I thought the code would be bad, but it still works and beats me every time! It won a regional prize or something (cash must have gotten lost in the mail). I'm pretty proud of it :).
+I wrote this Java chess engine eight years ago in 2005 for my grade 12 high school project. I was 17 at the time, so I thought the code would be really bad, but it still works and beats me most of the time, bearing in mind that I'm not a very good chess player. It won a regional prize or something (cash must have gotten lost in the mail). I'm pretty proud of it :).
 
 ![Chessmate Screenshot](/chessmate-screenshot.png "Chessmate Playing")
 
