@@ -1,6 +1,3 @@
-
-package Chess;
-
 import java.util.Comparator;
 
 public class ChessMove// implements Comparator

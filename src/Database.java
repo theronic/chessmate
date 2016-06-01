@@ -1,6 +1,3 @@
-
-package Chess;
-
 import java.awt.*;
 import java.sql.*;
 import java.awt.event.*;

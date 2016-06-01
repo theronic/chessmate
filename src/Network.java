@@ -1,6 +1,3 @@
-
-package Chess;
-
 import java.net.*;
 
 class Network implements Runnable

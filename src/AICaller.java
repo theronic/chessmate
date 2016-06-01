@@ -1,7 +1,3 @@
-package Chess;
-
-
-
 public class AICaller extends Thread
 {
 /**

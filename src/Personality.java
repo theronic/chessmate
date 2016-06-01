@@ -1,6 +1,3 @@
-
-package Chess;
-
 class Personality
 {
 	String name;

@@ -1,5 +1,3 @@
-package Chess;
-
 import java.util.*;
 
 public abstract class Search
