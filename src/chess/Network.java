@@ -1,5 +1,5 @@
 
-package Chess;
+package chess;
 
 import java.net.*;
 
