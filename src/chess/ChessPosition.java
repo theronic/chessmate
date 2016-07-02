@@ -1,4 +1,4 @@
-package Chess;
+package chess;
 
 import java.util.Vector;
 import java.util.Enumeration;
