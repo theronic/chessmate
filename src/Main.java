@@ -29,7 +29,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 	public static Chess chess;
 
 /**
- * A variable for keeping the database connection.
+ * A variable for keeping the database connection. This holds all the various chess board piece positions.
  */
 	private static Database db;
 
