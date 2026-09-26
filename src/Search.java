@@ -12,8 +12,8 @@ public abstract class Search
     /* Tests if a player has a winning position (checkmate). */
     public abstract boolean wonPosition(Position p, boolean player);
 
-    /* Returns a float indicating the arbitrary score given to a certain position. */
-    public abstract float positionEvaluation(Position p, boolean player);
+    /* Returns the position's score in centipawns for the requested player. */
+    public abstract int positionEvaluation(Position p, boolean player);
 
     /* Updates the chess position displayed in main program. */
     public abstract void printPosition(Position p);
