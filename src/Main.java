@@ -286,7 +286,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 	JLabel field_Nodes = new JLabel("0");
 	JLabel field_NodesSecond = new JLabel("0");
 	JLabel field_Depth = new JLabel("0");
-	JLabel field_Score = new JLabel("0");
+	JLabel field_Score = new JLabel("0 cp");
 	JLabel field_Thinking = new JLabel();
 	JLabel field_MoveTime = new JLabel("0 seconds");
 
@@ -413,14 +413,14 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
 		if ( player == Chess.PROGRAM )
 		{
-			graph.data.add( new Float(chess.bestMoveEval) );
+			graph.data.add(Chess.bestMoveEval);
 			graph.repaint();
 		}
         if (Math.abs(Chess.bestMoveEval) >= Chess.MATE - 64) {
-            int plies = Math.round(Chess.MATE - Math.abs(Chess.bestMoveEval));
+            int plies = Chess.MATE - Math.abs(Chess.bestMoveEval);
             field_Score.setText("Mate in " + ((plies + 1) / 2));
         } else {
-            field_Score.setText(Float.toString(Chess.bestMoveEval));
+            field_Score.setText(Chess.bestMoveEval + " cp");
         }
 
 		chess.bWhoseTurn = Chess.pos.whiteToMove;

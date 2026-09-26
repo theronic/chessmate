@@ -15,8 +15,8 @@ public class Chess
     public static volatile boolean bThinking = false;
     public static volatile int nodeCount, reachedDepth;
     public static int maxDepth = 5;
-    public static final float MATE = 30000;
-    private static final float INFINITY = 100000;
+    public static final int MATE = 600000;
+    private static final int INFINITY = 2000000;
     private static final int MAX_PLY = 64;
     private static final int QUIET_DEPTH = 8;
 
@@ -24,7 +24,7 @@ public class Chess
     public static ChessPosition pos = new ChessPosition();
     public static volatile ChessPosition workPos = new ChessPosition();
     public static ChessMove bestMove;
-    public static float bestMoveEval;
+    public static int bestMoveEval;
     public static volatile ChessMove[] principalVariation = new ChessMove[0];
     private final ChessMove[][] lines = new ChessMove[MAX_PLY + 1][];
     private ChessMove iterationMove;
@@ -48,7 +48,7 @@ public class Chess
         8, -8, 12, -12, 19, -19, 21, -21, 0,
         10, 20, 0
     };
-    private static final float[] value = {0, 1, 3, 3.2f, 5, 9, 300};
+    private static final int[] value = {0, 100, 300, 320, 500, 900, 30000};
     private static final int[] knightSteps = {8, -8, 12, -12, 19, -19, 21, -21};
     private static final int[] kingSteps = {-1, 1, 10, -10, -9, -11, 9, 11};
     private static final int[] promotions = {
@@ -121,27 +121,30 @@ public class Chess
         return control;
     }
 
-    /** The original material, attack, defence and centre heuristic, with fresh control. */
-    public float positionEvaluation(ChessPosition p, boolean player)
+    /** The original heuristic in centipawns: a pawn contributes 100 in material. */
+    public int positionEvaluation(ChessPosition p, boolean player)
     {
         int[][] counts = controlData(p);
         int[] white = counts[0], black = counts[1];
-        float material = 0, control = 0;
+        int material = 0, control = 0;
         for (int sq = 0; sq < 80; sq++) {
             if (!onBoard(sq) || p.board[sq] == 0) continue;
             int piece = p.board[sq];
-            control += white[sq];
-            control -= black[sq];
+            // Keep hundredths of the old control units until the final weighting.
+            control += 100 * (white[sq] - black[sq]);
             if (piece < 0 && white[sq] > black[sq]) control += value[-piece];
             if (piece > 0 && white[sq] < black[sq]) control -= value[piece];
-            material += (piece > 0 ? 5 : -5) * value[Math.abs(piece)];
+            material += piece > 0 ? value[piece] : -value[-piece];
         }
-        control += white[33] - black[33];
-        control += white[34] - black[34];
-        control += white[43] - black[43];
-        control += white[44] - black[44];
-        control *= 0.333;
-        float score = material + control;
+        control += 100 * (white[33] - black[33]);
+        control += 100 * (white[34] - black[34]);
+        control += 100 * (white[43] - black[43]);
+        control += 100 * (white[44] - black[44]);
+        // Old material was multiplied by 5, so one old score unit is 20 cp.
+        // control / 100 * 0.333 * 20 = control * 333 / 5000.
+        // Round once, with halves away from zero, so colour symmetry is exact.
+        int weightedControl = control * 333;
+        int score = material + (weightedControl + (weightedControl >= 0 ? 2500 : -2500)) / 5000;
         return player ? score : -score;
     }
 
@@ -289,7 +292,7 @@ public class Chess
         for (int limit = start; limit <= maxDepth; limit++) {
             iterationMove = null;
             try {
-                float score = search(p, player, depth, limit, 0, -INFINITY, INFINITY);
+                int score = search(p, player, depth, limit, 0, -INFINITY, INFINITY);
                 if (!bThinking) break;
                 bestMove = iterationMove == null ? bestMove : new ChessMove(iterationMove);
                 bestMoveEval = score;
@@ -319,8 +322,8 @@ public class Chess
         if (ply == 0) iterationMove = move;
     }
 
-    private float search(ChessPosition p, boolean player, int ply, int limit,
-                         int extension, float alpha, float beta)
+    private int search(ChessPosition p, boolean player, int ply, int limit,
+                       int extension, int alpha, int beta)
     {
         visit(ply);
         List<ChessMove> moves = legalMoves(p, player);
@@ -332,7 +335,7 @@ public class Chess
             int childExtension = p.board[move.to] != 0
                     || Math.abs(p.board[move.from]) == ChessPosition.PAWN ? 2 : 0;
             ChessPosition.Undo undo = p.make(move);
-            float score;
+            int score;
             try {
                 score = -search(p, !player, ply + 1, limit, childExtension, -beta, -alpha);
             } finally {
@@ -348,12 +351,12 @@ public class Chess
     }
 
     /** Finish exchanges at the horizon; a checked side must try its legal evasions. */
-    private float quiescence(ChessPosition p, boolean player, int ply, int quietPly,
-                             float alpha, float beta, List<ChessMove> moves)
+    private int quiescence(ChessPosition p, boolean player, int ply, int quietPly,
+                           int alpha, int beta, List<ChessMove> moves)
     {
         if (moves.isEmpty()) return kingAttacked(p.board, player) ? -MATE + ply : 0;
         boolean checked = kingAttacked(p.board, player);
-        float score = positionEvaluation(p, player);
+        int score = positionEvaluation(p, player);
         // Bound long checking sequences as well as capture sequences.
         if (ply == MAX_PLY || (!checked && quietPly >= QUIET_DEPTH)) return score;
         if (!checked) {

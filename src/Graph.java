@@ -17,7 +17,13 @@ class Graph extends Panel
 /**
  * A vector to store the previous scores, as determined by the alpha-beta search.
  */
-	public static Vector data = new Vector();
+	public static Vector<Integer> data = new Vector<Integer>();
+
+    /** Preserve the graph's original scale: ten centipawns per pixel. */
+    static int scoreHeight(int centipawns)
+    {
+        return Math.max(-160, Math.min(160, centipawns / 10));
+    }
 
 /**
  * Draws the actual graph.
@@ -45,21 +51,14 @@ class Graph extends Panel
 		prev.y = getHeight() / 2;
 
 		int nDraw = getWidth() / 2 / xSpacing;
-		float fv = 0;
 
 		for ( int i = tempSize; i != 0 ; --i )
 		{
-			Float f = (Float) data.get( tempSize - i );
-			fv = f.floatValue() * 2;
-			if ( fv > 160 )
-				fv = 160.0f;
-			else
-			if ( fv < -160 )
-				fv = -160.0f;
+			int score = data.get(tempSize - i);
 			cur.x = getWidth()/2 - (int)( xSpacing * i );
-			cur.y = (int)(getHeight() / 2 + fv);
+			cur.y = getHeight() / 2 + scoreHeight(score);
 
-			if ( f.floatValue() > 0 )
+			if (score > 0)
 				g.setColor( Color.black );
 			else
 				g.setColor( Color.white );

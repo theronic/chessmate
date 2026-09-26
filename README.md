@@ -15,6 +15,8 @@ Install a Java SDK (Java 8 or later).
 
 The scripts compile the `Chess` package into `build/` and run with the correct image directory.
 
+After compiling the tests, run `java -Xmx512m -cp build Chess.ChessBenchmark eval` or replace `eval` with `search` to benchmark evaluation or search.
+
 I wrote this Java chess engine eight years ago in 2005 for my grade 12 high school project. I was 17 at the time, so I thought the code would be really bad, but it still works and beats me most of the time, bearing in mind that I'm not a very good chess player. It won a regional prize or something (cash must have gotten lost in the mail). I'm pretty proud of it :).
 
 ![Chessmate Screenshot](/chessmate-screenshot.png "Chessmate Playing")
@@ -49,7 +51,7 @@ The project had a database requirement, but I ripped out the Access database pro
 
 ## Design of Heuristic Function
 
-The `positionEvaluation` method returns a floating-point score for the requested side: positive for an advantage, negative for a disadvantage. It calculates fresh attack and defence counts with `controlData`.
+The evaluation and search use integer centipawns (100 = one pawn): positive for an advantage, negative for a disadvantage. Material and control retain their original relative weights; control is rounded once to the nearest centipawn. The score display uses centipawns, and the graph keeps its previous scale. Evaluation calculates fresh attack and defence counts with `controlData`.
 
 The following factors are weighted to evaluate each board position:
  - Material gain (sum of the value of your pieces minus the opponent's)

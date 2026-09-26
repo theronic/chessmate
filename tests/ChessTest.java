@@ -209,7 +209,7 @@ public class ChessTest
         p = fen("4k3/8/8/8/8/8/7p/R3K3 b - - 0 1");
         counts = Chess.controlData(p);
         check(counts[1][square("g1")] == 12 && counts[1][square("h1")] == 0, "Pawn geometry at edge");
-        float score = chess.positionEvaluation(p, true);
+        int score = chess.positionEvaluation(p, true);
         chess.calcPossibleMoves(fen(START), false);
         chess.positionEvaluation(fen("7k/8/8/8/8/8/8/KQ6 w - - 0 1"), false);
         check(score == chess.positionEvaluation(p, true), "Evaluation independent of prior positions");
@@ -217,7 +217,7 @@ public class ChessTest
         ChessPosition mirror = new ChessPosition();
         for (int sq = 0; sq < 80; sq++) if (Chess.onBoard(sq))
             mirror.board[(7 - sq / 10) * 10 + sq % 10] = -p.board[sq];
-        check(Math.abs(score + chess.positionEvaluation(mirror, true)) < 0.001, "Colour symmetry");
+        check(score == -chess.positionEvaluation(mirror, true), "Exact colour symmetry");
     }
 
     static ChessMove search(ChessPosition p, int depth, boolean iterative)
@@ -235,6 +235,44 @@ public class ChessTest
             line.makeMove(m);
         }
         return found;
+    }
+
+    static void centipawns() throws Exception
+    {
+        // Isolated pieces: h1's bishop/queen rays also control two centre squares.
+        int[] expected = {0, 100, 300, 333, 500, 913, 30000};
+        for (int piece = ChessPosition.PAWN; piece <= ChessPosition.KING; piece++) {
+            ChessPosition p = new ChessPosition();
+            p.board[piece == ChessPosition.PAWN ? square("h2") : square("h1")] = piece;
+            check(chess.positionEvaluation(p, true) == expected[piece],
+                    "Centipawn material/control calibration for piece " + piece);
+        }
+        // Captured from master before the conversion, across 128 seeded legal positions.
+        java.nio.file.Path fixture = java.nio.file.Paths.get("tests/fixtures/float-evaluations.tsv");
+        if (!java.nio.file.Files.exists(fixture)) fixture = java.nio.file.Paths.get("..").resolve(fixture);
+        int cases = 0;
+        for (String row : java.nio.file.Files.readAllLines(fixture, java.nio.charset.StandardCharsets.UTF_8)) {
+            if (row.startsWith("#")) continue;
+            String[] fields = row.split("\t");
+            ChessPosition p = Chess.decodePosition(fields[0]);
+            double previous = Double.parseDouble(fields[1]) * 20;
+            int score = chess.positionEvaluation(p, true);
+            check(Math.abs(score - previous) <= 0.501,
+                    "Keep original heuristic within half a centipawn: " + score + " vs " + previous);
+            check(score == -chess.positionEvaluation(p, false), "Exact perspective symmetry");
+            ChessPosition mirror = new ChessPosition();
+            for (int sq = 0; sq < 80; sq++) if (Chess.onBoard(sq))
+                mirror.board[(7 - sq / 10) * 10 + sq % 10] = -p.board[sq];
+            check(score == -chess.positionEvaluation(mirror, true), "Exact mirrored colour symmetry");
+            check(Math.abs(score) < Chess.MATE - 64, "Evaluation stays outside the mate range");
+            if (cases == 0) check(score == 167, "Round 166.5 cp away from zero");
+            cases++;
+        }
+        check(cases == 128, "Read every baseline position");
+        check(Graph.scoreHeight(100) == 10 && Graph.scoreHeight(-100) == -10,
+                "Graph keeps ten pixels per pawn");
+        check(Graph.scoreHeight(Chess.MATE) == 160 && Graph.scoreHeight(-Chess.MATE) == -160,
+                "Mate scores stay within graph bounds");
     }
 
     static void searches() throws Exception
@@ -255,7 +293,7 @@ public class ChessTest
         check(search(p, 2, false).toString().equals("d1d5"), "Take hanging queen");
         p = fen("6k1/5ppp/8/8/8/8/q4PPP/3R2K1 w - - 0 1");
         ChessMove direct = search(p, 4, false);
-        float directScore = Chess.bestMoveEval;
+        int directScore = Chess.bestMoveEval;
         check(search(p, 4, true).toString().equals(direct.toString())
                 && Chess.bestMoveEval == directScore, "Iterative and direct search agree");
         p = fen("7k/6Q1/5K2/8/8/8/8/8 b - - 0 1");
@@ -266,13 +304,13 @@ public class ChessTest
         check(chess.drawnPosition(p), "Draw detection");
         // Terminal nodes must be recognized even exactly at the depth cutoff.
         java.lang.reflect.Method helper = Chess.class.getDeclaredMethod("search", ChessPosition.class,
-                boolean.class, int.class, int.class, int.class, float.class, float.class);
+                boolean.class, int.class, int.class, int.class, int.class, int.class);
         helper.setAccessible(true);
         Chess.bThinking = true;
-        check((Float) helper.invoke(chess, p, false, 1, 1, 0, -100000f, 100000f) == 0,
+        check((Integer) helper.invoke(chess, p, false, 1, 1, 0, -2000000, 2000000) == 0,
                 "Stalemate at horizon scores zero");
         ChessPosition mated = fen("7k/6Q1/5K2/8/8/8/8/8 b - - 0 1");
-        check((Float) helper.invoke(chess, mated, false, 1, 1, 0, -100000f, 100000f) == -Chess.MATE + 1,
+        check((Integer) helper.invoke(chess, mated, false, 1, 1, 0, -2000000, 2000000) == -Chess.MATE + 1,
                 "Checkmate at horizon scores mate");
         Chess.bThinking = false;
         p = fen("4r1k1/8/8/8/8/8/5PPP/3QK3 w - - 0 1");
@@ -282,10 +320,10 @@ public class ChessTest
 
         p = fen("6k1/5ppp/8/8/8/8/q4PPP/3R2K1 w - - 0 1");
         ChessMove completed = search(p, 3, false);
-        float completedScore = Chess.bestMoveEval;
+        int completedScore = Chess.bestMoveEval;
         String completedLine = Arrays.toString(Chess.principalVariation);
         Chess cancellable = new Chess(null) {
-            @Override public float positionEvaluation(ChessPosition position, boolean player) {
+            @Override public int positionEvaluation(ChessPosition position, boolean player) {
                 if (Chess.principalVariation.length > 0) Chess.bThinking = false;
                 return super.positionEvaluation(position, player);
             }
@@ -345,6 +383,7 @@ public class ChessTest
         moveCounts();
         specialMoves();
         evaluation();
+        centipawns();
         searches();
         history();
         System.out.println("Passed " + assertions + " checks");
