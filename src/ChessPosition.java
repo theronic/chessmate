@@ -1,127 +1,141 @@
 package Chess;
 
-import java.util.Vector;
-import java.util.Enumeration;
-
+/** The original 8 by 10 board, including the state needed for special moves. */
 public class ChessPosition
 {
-    final static public int BLANK = 0;
-    final static public int PAWN = 1;
-    final static public int KNIGHT = 2;
-    final static public int BISHOP = 3;
-    final static public int ROOK = 4;
-    final static public int QUEEN = 5;
-    final static public int KING = 6;
+    public static final int BLANK = 0, PAWN = 1, KNIGHT = 2, BISHOP = 3,
+                            ROOK = 4, QUEEN = 5, KING = 6;
+    public static final int WHITE_KINGSIDE = 1, WHITE_QUEENSIDE = 2,
+                            BLACK_KINGSIDE = 4, BLACK_QUEENSIDE = 8;
 
-/**
- * An array of board squares.
- */
-    public int [] board = new int[80];
-/**
- * Stores the index of pieces on the board.  Exists for faster move generation.
- */
- //   public Vector pieces = new Vector();
+    public int[] board = new int[80];
+    public boolean whiteToMove = true;
+    public int castlingRights = 0;
+    public int enPassantSquare = -1;
+    boolean bWhiteKingMoved, bBlackKingMoved;
+    boolean bWhiteChecked, bBlackChecked;
 
-    boolean bWhiteKingMoved = false;
-    boolean bBlackKingMoved = false;
-
-    boolean bWhiteChecked = false;
-    boolean bBlackChecked = false;
-
-    int enPassantSquare = 0;
-
-/**
- * Applies the given move parameter to the board position saved in this instance of the class.
- */
-    public void makeMove(ChessMove move)
-    {
-   /* 	pieces.remove(move.from);
-    	if ( !pieces.contains( new Integer(move.to) ) )
-    		pieces.add( new Integer(move.to) );
-
-		pieces.set( pieces.indexOf( new Integer(move.from)) , new Integer(move.to) );
-*/
-
-    	board[ move.to ] = board[ move.from ];
-		board[ move.from ] = 0;
-
-		if ( move.to >= 70  )
-		{
-			if ( board[move.to] == PAWN )
-				board[move.to] = QUEEN;
-		} else
-		if ( move.to < 8 )
-		{
-			if ( board[move.to] == -PAWN )
-				board[move.to] = -QUEEN;
-		} else
-		if ( board[ move.to ] == KING && !bWhiteKingMoved )
-		{
-			bWhiteKingMoved = true;
-		} else
-		if ( board[ move.to ] == -KING && !bBlackKingMoved )
-		{
-			bBlackKingMoved = true;
-		}// else
-/*		if ( enPassantSquare > 0 )
-		{
-			if ( board[ move.to ] == PAWN && move.to-10 == enPassantSquare )
-			{
-				board[move.to-10] = 0;
-				enPassantSquare = 0;
-			} else
-			if ( board[ move.to ] == -PAWN && move.to+10 == enPassantSquare )
-			{
-				board[move.to+10] = 0;
-				enPassantSquare = 0;
-			}
-		}*/
-	}
-
-/**
- * FindPieces() scans the board array and saves the pieces to the pieces vector, after clearing it.
- */
- /*	public Vector FindPieces()
- 	{
- 		pieces.clear();
- 		for ( int y = 0; y < 8; y++ )
- 			for ( int x = 0; x < 8; x++ )
- 			{
- 				int i = y*10+x;
- 				if ( board[i] != 0 )
- 					pieces.add( new Integer(i) );
- 			}
- 		return pieces;
- 	}*/
-
-/**
- * Instantiates the board position by mirroring another board position.
- * Used extensively during alpha-beta search.
- */
- 	public ChessPosition( ChessPosition p )
-	{
-		System.arraycopy( p.board, 0, board, 0, 80 );
-		//eval = p.eval;
-		bWhiteKingMoved = p.bWhiteKingMoved;
-		bBlackKingMoved = p.bBlackKingMoved;
-
-		bWhiteChecked = p.bWhiteChecked;
-		bBlackChecked = p.bBlackChecked;
-
-/*		pieces = new Vector();
-
-		Enumeration e = p.pieces.elements();
-
-		while ( e.hasMoreElements() )
-		{
-			pieces.add( e.nextElement() );
-		}*/
-	}
-
-/**
- * Constructs an empty chess board.
- */
     public ChessPosition()
     {
+        for (int y = 0; y < 8; y++) {
+            board[y * 10 + 8] = 7;
+            board[y * 10 + 9] = 7;
+        }
+    }
+
+    public ChessPosition(ChessPosition p)
+    {
+        System.arraycopy(p.board, 0, board, 0, 80);
+        whiteToMove = p.whiteToMove;
+        castlingRights = p.castlingRights;
+        enPassantSquare = p.enPassantSquare;
+        bWhiteKingMoved = p.bWhiteKingMoved;
+        bBlackKingMoved = p.bBlackKingMoved;
+        bWhiteChecked = p.bWhiteChecked;
+        bBlackChecked = p.bBlackChecked;
+    }
+
+    /** Callers validate moves before applying them. An omitted promotion means queen. */
+    public void makeMove(ChessMove move)
+    {
+        make(move);
+    }
+
+    /** Save all changed squares and state, so probes and search can undo exactly. */
+    Undo make(ChessMove move)
+    {
+        Undo undo = new Undo(this, move);
+        int piece = board[move.from];
+        int side = piece > 0 ? 1 : -1;
+        int kind = Math.abs(piece);
+
+        if (kind == PAWN && move.to == enPassantSquare && board[move.to] == 0
+                && move.from % 10 != move.to % 10) {
+            undo.captureSquare = move.to - side * 10;
+            undo.captured = board[undo.captureSquare];
+            board[undo.captureSquare] = 0;
+        }
+
+        // A rook's right is lost when it moves or is captured, never regained.
+        castlingRights &= ~(rookRight(move.from) | rookRight(move.to));
+        if (kind == KING) {
+            if (side > 0) {
+                bWhiteKingMoved = true;
+                castlingRights &= ~(WHITE_KINGSIDE | WHITE_QUEENSIDE);
+            } else {
+                bBlackKingMoved = true;
+                castlingRights &= ~(BLACK_KINGSIDE | BLACK_QUEENSIDE);
+            }
+            if (Math.abs(move.to - move.from) == 2) {
+                int rank = move.from / 10 * 10;
+                undo.rookFrom = rank + (move.to < move.from ? 0 : 7);
+                undo.rookTo = (move.from + move.to) / 2;
+                undo.rook = board[undo.rookFrom];
+                undo.rookTarget = board[undo.rookTo];
+                board[undo.rookTo] = board[undo.rookFrom];
+                board[undo.rookFrom] = 0;
+            }
+        }
+
+        board[move.from] = 0;
+        board[move.to] = piece;
+        if (kind == PAWN && (move.to / 10 == 0 || move.to / 10 == 7))
+            board[move.to] = side * (move.promotion == 0 ? QUEEN : move.promotion);
+
+        enPassantSquare = kind == PAWN && Math.abs(move.to - move.from) == 20
+                ? (move.from + move.to) / 2 : -1;
+        whiteToMove = side < 0;
+        bWhiteChecked = bBlackChecked = false;
+        return undo;
+    }
+
+    void unmake(ChessMove move, Undo undo)
+    {
+        board[move.from] = undo.piece;
+        board[move.to] = undo.target;
+        board[undo.captureSquare] = undo.captured;
+        if (undo.rookFrom >= 0) {
+            board[undo.rookFrom] = undo.rook;
+            board[undo.rookTo] = undo.rookTarget;
+        }
+        castlingRights = undo.rights;
+        enPassantSquare = undo.enPassant;
+        whiteToMove = undo.turn;
+        bWhiteKingMoved = undo.whiteMoved;
+        bBlackKingMoved = undo.blackMoved;
+        bWhiteChecked = undo.whiteChecked;
+        bBlackChecked = undo.blackChecked;
+    }
+
+    private static int rookRight(int square)
+    {
+        switch (square) {
+            case 0: return WHITE_KINGSIDE;
+            case 7: return WHITE_QUEENSIDE;
+            case 70: return BLACK_KINGSIDE;
+            case 77: return BLACK_QUEENSIDE;
+            default: return 0;
+        }
+    }
+
+    static class Undo
+    {
+        final int piece, target, rights, enPassant;
+        final boolean turn, whiteMoved, blackMoved, whiteChecked, blackChecked;
+        int captureSquare, captured, rookFrom = -1, rookTo, rook, rookTarget;
+
+        Undo(ChessPosition p, ChessMove move) {
+            piece = p.board[move.from];
+            target = p.board[move.to];
+            captureSquare = move.to;
+            captured = target;
+            rights = p.castlingRights;
+            enPassant = p.enPassantSquare;
+            turn = p.whiteToMove;
+            whiteMoved = p.bWhiteKingMoved;
+            blackMoved = p.bBlackKingMoved;
+            whiteChecked = p.bWhiteChecked;
+            blackChecked = p.bBlackChecked;
+        }
     }
 }

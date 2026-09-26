@@ -6,17 +6,33 @@
 
 ## How to run
 
-Run `src/build.bat` to compile and run. You will need the Java SDK. You can beat her easily on a depth of 4, but if you give it ~20-30s at depth setting of 5, she plays a decent game.
+Install a Java SDK (Java 8 or later).
+
+- macOS/Linux: `./build.sh run`
+- Windows: `src\build.bat`
+- Tests: `./build.sh test` or `src\build.bat test`
+- Deeper move-count tests: `CHESS_DEEP=1 ./build.sh test`
+
+The scripts compile the `Chess` package into `build/` and run with the correct image directory.
 
 I wrote this Java chess engine eight years ago in 2005 for my grade 12 high school project. I was 17 at the time, so I thought the code would be really bad, but it still works and beats me most of the time, bearing in mind that I'm not a very good chess player. It won a regional prize or something (cash must have gotten lost in the mail). I'm pretty proud of it :).
 
 ![Chessmate Screenshot](/chessmate-screenshot.png "Chessmate Playing")
 
 ## Limitations
-Chessmate has no opening book and cannot castle, take en passant or promote pawns. If you are feeling masochistic, you can add castling by modifying the `Board` class and heuristic function, `positionEvaluation`.
+Chessmate has no opening book. It detects checkmate and stalemate, but does not adjudicate repetition, move-count draws or insufficient material. Board setup clears castling and en passant rights.
+
+## Fixes
+
+- Added castling, en passant and all four pawn promotion choices.
+- Reject moves that leave the king in check; distinguish checkmate from stalemate.
+- Recompute board control for each evaluation, including defended pieces and pawn attacks on empty squares.
+- Keep search extensions local to each branch, use full search windows, and finish exchanges and check evasions at the horizon.
+- Preserve special-move state on takeback and save; discard cancelled computer moves after a new game, takeback or side change.
+- Restore the Windows build script and remove unused applet imports.
 
 ## How does it work?
-Chessmate uses an iterative deepening minimax search algorithm with alpha-beta pruning and simple horizon detection during exchanges with an original heuristic function.
+Chessmate uses iterative deepening minimax search with alpha-beta pruning, two-ply extensions after captures and pawn moves, and a bounded capture search at the horizon. It retains the 2005 board representation, piece values, move ordering and material/control heuristic.
 
 That's a fancy way of saying:
 
@@ -33,12 +49,10 @@ The project had a database requirement, but I ripped out the Access database pro
 
 ## Design of Heuristic Function
 
-The heuristic function is quite simple, but performs well given sufficient search depth (5 seems to be the sweet spot). The `positionEvaluation` method returns a floating-point value that is positive or negative based on whether it's winning or losing, respectively. It also uses some of the board control data set in the `setControlData` method.
+The `positionEvaluation` method returns a floating-point score for the requested side: positive for an advantage, negative for a disadvantage. It calculates fresh attack and defence counts with `controlData`.
 
 The following factors are weighted to evaluate each board position:
  - Material gain (sum of the value of your pieces minus the opponent's)
  - Attacking the opponent's pieces
- - Defending it's own pieces
+ - Defending its own pieces
  - Controlling the board, with extra weight for controlling the four squares in the centre of the board.
-
-The structure of these evaluation functions are terrible and really hard to unit test. Having read through the evaluation code, I am almost certain that the board control data is fundamentally broken. Oh well.

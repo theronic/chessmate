@@ -7,6 +7,7 @@ public class ChessMove// implements Comparator
 {
     public int from;
     public int to;
+    public int promotion;
 
 	private static char [] rankNames = {'h','g','f','e','d','c','b','a','/','/'};
 
@@ -19,7 +20,8 @@ public class ChessMove// implements Comparator
     {
     	if ( from == 0 && to == 0 )
     		return "..";
-    	return new String( squareString(from) + squareString(to) );
+        return squareString(from) + squareString(to)
+            + (promotion == 0 ? "" : " pnbrqk".charAt(promotion));
     }
 
     public ChessMove()
@@ -36,5 +38,12 @@ public class ChessMove// implements Comparator
     {
     	from = m.from;
     	to = m.to;
+        promotion = m.promotion;
+    }
+
+    public ChessMove(int from, int to, int promotion)
+    {
+        this(from, to);
+        this.promotion = promotion;
     }
 }
