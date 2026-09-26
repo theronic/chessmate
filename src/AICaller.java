@@ -1,93 +1,101 @@
 package Chess;
 
+import javax.swing.SwingUtilities;
 
-
+/** One worker searches private board copies; only the event thread commits a move. */
 public class AICaller extends Thread
 {
-/**
- * A reference to the parent Chess class.
- * @see class Chess
- */
-	Chess chess;
+    private final Chess chess;
+    private boolean running = true;
+    private ChessPosition pending;
+    private boolean pendingPlayer;
+    private long generation;
 
-	boolean bStart = false;
+    public AICaller(Chess chess)
+    {
+        this.chess = chess;
+        setDaemon(true);
+    }
 
-	public void go()
-	{
-		bStart = true;
-	}
+    public synchronized void go()
+    {
+        cancel();
+        if (!Chess.main.bPlaying || chess.bWhoseTurn != Chess.PROGRAM) return;
+        pending = Chess.pos;
+        pendingPlayer = Chess.PROGRAM;
+        setControls(false);
+        notifyAll();
+    }
 
-	public void cancel()
-	{
-		bStart = false;
-	}
+    public synchronized void cancel()
+    {
+        ++generation;
+        pending = null;
+        Chess.bThinking = false;
+        setControls(true);
+    }
 
-	public void exit()
-	{
-		bRunning = false;
-	}
+    public synchronized void exit()
+    {
+        cancel();
+        running = false;
+        notifyAll();
+    }
 
+    private void setControls(boolean enabled)
+    {
+        Chess.main.difficultySlider.setEnabled(enabled);
+        Chess.main.chk_IterativeDeep.setEnabled(enabled);
+        Chess.main.butt_SetupBoard.setEnabled(enabled);
+        Chess.main.menu_Game_SetPosition.setEnabled(enabled);
+    }
 
-/**
- * A boolean variable indicating whether the AICaller class is running.
- * This prevents the possibility of two threads simultaneously manipulating the
- * chess board.  This should never happen, but one can never be too safe.
- */
-	private static boolean bRunning = false;
+    public void run()
+    {
+        while (true) {
+            final ChessPosition starting;
+            final boolean player;
+            final long request;
+            synchronized (this) {
+                while (running && pending == null) {
+                    try {
+                        wait();
+                    } catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
+                if (!running) return;
+                starting = pending;
+                player = pendingPlayer;
+                request = generation;
+                pending = null;
+                Chess.bThinking = true;
+            }
 
-	public AICaller( Chess chess )
-	{
-		this.chess = chess;
-		//Thread.currentThread().setPriority(MAX_PRIORITY);
-	}
-
-/**
- * This function is called when a player moves a piece and it is the AI's turn to
- * make a move.  It simply processes the search in a separate thread so the application is not
- * locked up.
- * The thread will exit if chess.bThinking is falsified.
- */
-	public void run()
-	{
-		if ( bRunning )
-			return;
-		bRunning = true;
-
-		while ( !chess.main.bQuit && bRunning )
-		{
-			if ( bStart )
-			{
-				bStart = false;
-
-				chess.bThinking = true;
-
-				chess.main.difficultySlider.setEnabled(false);
-				chess.main.chk_IterativeDeep.setEnabled(false);
-				chess.main.butt_SetupBoard.setEnabled(false);
-				chess.main.menu_Game_SetPosition.setEnabled(false);
-
-				ChessPosition n = chess.playGame( chess.pos, chess.PROGRAM );
-				if ( chess.bThinking )
-				{
-					chess.bThinking = false; // consider removing the bRunning?
-					chess.pos = n;
-				}
-				chess.main.difficultySlider.setEnabled(true);
-				chess.main.chk_IterativeDeep.setEnabled(true);
-				chess.main.butt_SetupBoard.setEnabled(true);
-				chess.main.menu_Game_SetPosition.setEnabled(true);
-			}
-
-			try {
-				Thread.currentThread().sleep( 50 );
-			} catch ( InterruptedException ex )
-			{
-				System.out.println("AICaller Thread Sleep Error");
-			}
-
-		}
-
-		bRunning = false;
-
-	}
+            ChessMove found = null;
+            RuntimeException failure = null;
+            try {
+                chess.playGame(starting, player);
+                if (Chess.bestMove != null) found = new ChessMove(Chess.bestMove);
+            } catch (RuntimeException problem) {
+                failure = problem;
+            }
+            final ChessMove move = found;
+            final RuntimeException error = failure;
+            SwingUtilities.invokeLater(() -> {
+                synchronized (AICaller.this) {
+                    if (request != generation) return;
+                    Chess.bThinking = false;
+                    setControls(true);
+                    if (error != null) {
+                        Chess.main.alert("Search stopped", error.toString());
+                    } else if (Chess.pos == starting && chess.bWhoseTurn == player && Chess.main.bPlaying) {
+                        if (move == null) Chess.main.checkGameOver();
+                        else Chess.main.playerMoved(player, move);
+                    }
+                }
+            });
+        }
+    }
 }

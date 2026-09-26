@@ -1,0 +1,29 @@
+name: Java tests
+on: [push, pull_request]
+jobs:
+  test:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            java: '8'
+          - os: ubuntu-latest
+            java: '26'
+          - os: windows-latest
+            java: '17'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+      - name: Test on Linux
+        if: runner.os != 'Windows'
+        run: ./build.sh test
+        env:
+          CHESS_DEEP: '1'
+      - name: Test on Windows
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: src\build.bat test

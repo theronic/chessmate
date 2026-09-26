@@ -8,7 +8,6 @@ import javax.swing.table.*;
 import javax.swing.*;
 import java.util.*;
 import java.lang.*;
-import java.applet.*;
 import javax.swing.event.*;
 import java.sql.*;
 import java.text.DateFormat;
@@ -398,45 +397,11 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 
 	public void playerMoved( boolean player, ChessMove move )
 	{
-		// test to enable en-passant
-		if ( chess.pos.board[move.from] == (player?ChessPosition.PAWN:-ChessPosition.PAWN) )
-		{
-			int offset = move.to - move.from;
-			if ( offset < 0 )
-				offset = -offset;
-			if ( offset == 20 ) // i.e. moved two square
-			{
-				chess.pos.enPassantSquare = move.to;
-				//System.out.println("En-passant option detected.");
-			}
-		} else
-			chess.pos.enPassantSquare = 0;
-
-		// adding previous position to the board history
-		ChessPosition p = new ChessPosition( chess.pos );
-		chess.boardHistory.push( p );
-
-		ChessPosition checkPos = new ChessPosition(p);
-
-		checkPos.bBlackChecked = false;
-		checkPos.bWhiteChecked = false;
-		checkPos.makeMove(move);
-		chess.calcPossibleMoves(checkPos,player);
-
-		/**
-		 * Do some checkmate testing
-		 */
-		if ( !bSetPosition )
-		if ( player == chess.BLACK && checkPos.bBlackChecked )
-		{
-			chess.bThinking = false;
-			alert("Checkmate", "Black is checkmated.");
-		} else
-		if ( player == chess.WHITE && checkPos.bWhiteChecked )
-		{
-			chess.bThinking = false;
-			alert("Checkmate","White is checkmated.");
-		}
+		ChessPosition previous = new ChessPosition(Chess.pos);
+        Chess.boardHistory.push(previous);
+        ChessPosition next = new ChessPosition(previous);
+        next.makeMove(move);
+        Chess.pos = next;
 
 		lastMove = move;
 
@@ -451,17 +416,15 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 			graph.data.add( new Float(chess.bestMoveEval) );
 			graph.repaint();
 		}
-		if ( chess.bestMoveEval >= 1000.0f )
-		{
-			field_Score.setText( "Mate in " + (int)(chess.maxDepth-1-(int)(chess.bestMoveEval / 1000.0f)/2) );
-		} else
-		if ( chess.bestMoveEval <= -1000.0f )
-		{
-			field_Score.setText( "Mate in " + (int)(chess.maxDepth-1-(chess.bestMoveEval / -1000.0f)/2) );
-		} else
-			field_Score.setText( new Float(chess.bestMoveEval).toString() );
+        if (Math.abs(Chess.bestMoveEval) >= Chess.MATE - 64) {
+            int plies = Math.round(Chess.MATE - Math.abs(Chess.bestMoveEval));
+            field_Score.setText("Mate in " + ((plies + 1) / 2));
+        } else {
+            field_Score.setText(Float.toString(Chess.bestMoveEval));
+        }
 
-		chess.bWhoseTurn = !player;
+		chess.bWhoseTurn = Chess.pos.whiteToMove;
+        if (!bSetPosition) checkGameOver();
 
 		// our little test for letting Chessmate play against himself :)
 /*		chess.PROGRAM = !chess.PROGRAM;
@@ -484,6 +447,18 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 		 bRedraw = true;
 	}
 
+    /** Check the side about to move, after the move has actually been committed. */
+    public void checkGameOver()
+    {
+        boolean player = Chess.pos.whiteToMove;
+        if (!chess.legalMoves(Chess.pos, player).isEmpty()) return;
+        bPlaying = false;
+        if (Chess.kingAttacked(Chess.pos.board, player))
+            alert("Checkmate", (player ? "White" : "Black") + " is checkmated.");
+        else
+            alert("Draw", "Stalemate.");
+    }
+
 	public void mouseEntered(MouseEvent e)
 	{
 	}
@@ -497,7 +472,8 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 	{
 		while ( true ) // a dummy for easy error-checking
 		{
-		if ( hoverPiece > 0 && !chess.bThinking)
+		if (hoverPiece > 0 && !Chess.bThinking
+                && (bSetPosition || bPlaying && chess.bWhoseTurn == Chess.HUMAN))
 		{
 			int x = e.getX() - HORZ_OFFSET; // - BOARD_HORZ_OFFSET;
 			int y = e.getY() - VERT_OFFSET; // - BOARD_VERT_OFFSET;
@@ -506,7 +482,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 			{
 				int square = calcSquare(x,y);
 
-				if ( square + 1 != hoverPiece )
+				if (Chess.onBoard(square) && square + 1 != hoverPiece)
 				{
 					// Now we must test whether this move is valid
 
@@ -518,8 +494,25 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 						if ( !chess.isValidMove( chess.pos, move ) )
 							break;
 
-					playerMoved( Chess.HUMAN, move );
-					chess.pos.makeMove(move);
+                    if (bPlaying && Math.abs(Chess.pos.board[move.from]) == ChessPosition.PAWN
+                            && (move.to / 10 == 0 || move.to / 10 == 7)) {
+                        String[] choices = {"Queen", "Rook", "Bishop", "Knight"};
+                        int choice = JOptionPane.showOptionDialog(this, "Promote pawn to:", "Promotion",
+                                JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+                                null, choices, choices[0]);
+                        if (choice < 0) break;
+                        move.promotion = new int[] {5, 4, 3, 2}[choice];
+                    }
+                    if (bSetPosition) {
+                        ChessPosition edited = new ChessPosition(Chess.pos);
+                        edited.board[move.to] = edited.board[move.from];
+                        edited.board[move.from] = 0;
+                        edited.castlingRights = 0;
+                        edited.enPassantSquare = -1;
+                        Chess.pos = edited;
+                    } else {
+                        playerMoved(Chess.HUMAN, move);
+                    }
 
 					// This is the queue for the PC to start THINKING...
 					if ( bPlaying )
@@ -593,24 +586,19 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 		} else
 		if ( source == menu_Game_Takeback || source == butt_Takeback )
 		{
-			lastMove = new ChessMove();
+            boolean waitingForComputer = chess.bWhoseTurn == Chess.PROGRAM;
+            aiCaller.cancel();
+            lastMove = new ChessMove();
+            int count = waitingForComputer ? 1 : 2;
+            for (int i = 0; i < count && !Chess.boardHistory.empty(); i++) {
+                chess.Takeback();
+                if (!moveList.isEmpty()) moveList.removeElementAt(moveList.size() - 1);
+            }
+            if (!waitingForComputer && !graph.data.isEmpty())
+                graph.data.removeElementAt(graph.data.size() - 1);
+            bPlaying = !bSetPosition;
+            field_Score.setText("");
 
-			chess.Takeback();
-
-			if ( moveList.size() > 0 )
-				moveList.removeElementAt( moveList.size()-1 );
-
-			if ( chess.bThinking )
-			{
-				chess.bThinking = false;
-			} else
-			{
-				chess.Takeback();
-				if ( moveList.size() > 0 )
-					moveList.removeElementAt( moveList.size()-1 );
-				if ( graph.data.size() > 0 )
-					graph.data.removeElementAt( graph.data.size()-1);
-			}
 			repaint();
 		} else
 		// Menu stuff
@@ -668,8 +656,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 		} else
 		if ( source == radio_White )
 		{
-			if ( chess.bThinking )
-				chess.bThinking = false;
+			aiCaller.cancel();
 			chess.HUMAN = chess.WHITE;
 			chess.PROGRAM = chess.BLACK;
 			bFlipBoard = true;
@@ -678,8 +665,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 		} else
 		if ( source == radio_Black )
 		{
-			if ( chess.bThinking )
-				chess.bThinking = false;
+			aiCaller.cancel();
 			chess.HUMAN = chess.BLACK;
 			chess.PROGRAM = chess.WHITE;
 			bFlipBoard = false;
@@ -918,9 +904,11 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 					NewGame();
 
 					chess.main.setTitle( og.desc );
-					chess.pos = new ChessPosition(og.pos);
-
-					chess.bWhoseTurn = chess.HUMAN;
+					aiCaller.cancel();
+                    chess.pos = new ChessPosition(og.pos);
+                    chess.bWhoseTurn = Chess.pos.whiteToMove;
+                    checkGameOver();
+                    if (bPlaying && chess.bWhoseTurn == Chess.PROGRAM) aiCaller.go();
 
 					dialog.dispose();
 				}
@@ -1129,9 +1117,20 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
  */
 	public void SetupBoard()
 	{
+		aiCaller.cancel();
+        Chess.pos.castlingRights = 0;
+        Chess.pos.enPassantSquare = -1;
 		bSetPosition = !bSetPosition;
 
 		bPlaying = !bSetPosition;
+
+        if (bPlaying) {
+            Chess.boardHistory.clear();
+            moveList.clear();
+            graph.data.clear();
+            checkGameOver();
+            if (bPlaying && chess.bWhoseTurn == Chess.PROGRAM) aiCaller.go();
+        }
 
 		if ( bSetPosition )
 		{
@@ -1150,7 +1149,11 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 	public void NewGame()
 	{
 		lastMove = new ChessMove();
-		chess.bThinking = false;
+		aiCaller.cancel();
+        bSetPosition = false;
+        bPlaying = true;
+        menu_Game_SetPosition.setLabel("Set-Up Position");
+        field_Score.setText("");
 
 		chess.NewGame();
 
@@ -1591,8 +1594,8 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
 					field_Depth.setText(chess.maxDepth + "/" + chess.reachedDepth);
 
 					tempString = new String();
-					for (int i = 0; i < chess.reachedDepth; i++)
-						tempString += chess.principalVariation[i].toString() + " ";
+					for (ChessMove move : Chess.principalVariation)
+                        tempString += move.toString() + " ";
 
 					field_Thinking.setText(tempString);
 
@@ -1912,7 +1915,7 @@ public class Main extends JFrame implements Runnable, MouseListener, MouseMotion
  */
 	public static void main(String[] args)
 	{
-		Main frame = new Main();
+		SwingUtilities.invokeLater(() -> new Main());
 
 		System.out.println("Welcome to Chessmate v" + VERSION);
 

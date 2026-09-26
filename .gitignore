@@ -1,7 +1,7 @@
 #java specific
 *.class
 *.pdf
-*.bat
+build/
 
 *.jde
 docs/*
